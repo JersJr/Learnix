@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Learnix by Jers</title>
+    <title>Asistencia Estudiantes - Con Google Sheets</title>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background: #f0f2f5; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
@@ -27,7 +27,7 @@
         .section.active { display: block; }
         h2 { margin-top: 0; color: #1e3c72; border-left: 5px solid #1e3c72; padding-left: 15px; }
         .user-info { text-align: right; margin-bottom: 20px; font-size: 0.9rem; color: #555; }
-        .logout { background: #dc3545; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; }
+        .logout { background: #dc3545; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; margin-left: 15px; }
         .logout:hover { background: #c82333; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
@@ -36,9 +36,9 @@
 </head>
 <body>
 <div class="container">
-    <div class="header">📊 Learnix By Jers</div>
+    <div class="header">📊 Asistencia Estudiantes</div>
     <div class="content">
-        <!-- Login/Registro -->
+        <!-- Panel de autenticación -->
         <div id="authPanel">
             <div class="form-box">
                 <h2 id="formTitle">Iniciar Sesión</h2>
@@ -56,7 +56,7 @@
             </div>
         </div>
 
-        <!-- Dashboard (aparece tras login) -->
+        <!-- Dashboard principal (tras login) -->
         <div id="dashboard" class="dashboard">
             <div class="user-info">
                 <span id="userEmail"></span>
@@ -77,7 +77,7 @@
             </div>
             <div id="sectionColegios" class="section">
                 <h2>Colegios</h2>
-                <p>Aquí puedes gestionar información de colegios (ejemplo).</p>
+                <p>Gestión de colegios (puedes ampliar).</p>
                 <button onclick="alert('Función en desarrollo: guardar colegios en tu hoja')">Agregar Colegio</button>
             </div>
             <div id="sectionHorario" class="section">
@@ -105,13 +105,15 @@
 </div>
 
 <script>
-    // Configuración: reemplaza con la URL de tu aplicación web de Google Apps Script
-    const APP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyQrUffNBO1Sgp9MmQUGlj7Bj4MfOSKYK870Pan7k3gB3UWQB5SDslOhzRsMHDy_kEBwg/exec'; // <-- CAMBIA ESTO
+    // === CONFIGURACIÓN ===
+    // Reemplaza con la URL de tu aplicación web de Google Apps Script
+    const APP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyQrUffNBO1Sgp9MmQUGlj7Bj4MfOSKYK870Pan7k3gB3UWQB5SDslOhzRsMHDy_kEBwg/exec';
 
-    // Estado de la UI
+    // Estado de la interfaz
     let isLogin = true;
     let currentUser = null;
 
+    // Elementos del DOM
     const authPanel = document.getElementById('authPanel');
     const dashboard = document.getElementById('dashboard');
     const formTitle = document.getElementById('formTitle');
@@ -123,7 +125,7 @@
     const userEmailSpan = document.getElementById('userEmail');
     const logoutBtn = document.getElementById('logoutBtn');
 
-    // Navegación interna con los enlaces data-section (A-F)
+    // Navegación entre secciones usando atributos data-section (A-F)
     document.querySelectorAll('.nav a').forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
@@ -138,70 +140,67 @@
         });
     });
 
-    // Función para llamar al Apps Script
-    async function callAppScript(action, data = {}) {
-        const payload = { action, ...data };
+    // Función para llamar al Apps Script usando x-www-form-urlencoded (sin preflight CORS)
+    async function callAppScript(action, extraData = {}) {
+        const formData = new URLSearchParams();
+        formData.append('action', action);
+        if (extraData.email) formData.append('email', extraData.email);
+        if (extraData.password) formData.append('password', extraData.password);
+        
         try {
             const response = await fetch(APP_SCRIPT_URL, {
                 method: 'POST',
-                mode: 'no-cors', // Importante para evitar CORS con Apps Script
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-            // Como usamos no-cors, no podemos leer la respuesta directamente.
-            // Apps Script devuelve texto plano. Para evitar esto, debemos usar una técnica diferente.
-            // Mejor usar fetch normal y configurar Apps Script para devolver JSON con el tipo correcto.
-            // Cambiamos a fetch normal sin no-cors, pero Apps Script debe permitir CORS.
-            // Para simplificar, usaremos un iframe oculto o mejor, cambiaremos a modo normal.
-            // Rehacemos la llamada sin no-cors y con el método POST estándar.
-            // Pero Apps Script requiere que la solicitud sea POST con Content-Type application/x-www-form-urlencoded o JSON.
-            // Vamos a ajustar.
-        } catch (error) {
-            console.error(error);
-            return { success: false, message: 'Error de conexión con el servidor.' };
-        }
-    }
-
-    // Versión corregida usando fetch normal (Apps Script debe estar publicado para acceso anónimo)
-    async function callAppScript(action, data = {}) {
-        const payload = { action, ...data };
-        try {
-            const response = await fetch(APP_SCRIPT_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: formData
             });
             const result = await response.json();
             return result;
         } catch (error) {
-            console.error(error);
+            console.error('Error en fetch:', error);
             return { success: false, message: 'Error de conexión con el servidor.' };
         }
     }
 
-    // Cargar datos del usuario (sección Inicio)
+    // Cargar datos de la hoja individual del usuario (sección Inicio)
     async function loadUserData() {
         if (!currentUser) return;
         const result = await callAppScript('getUserData', { email: currentUser });
         if (result.success && result.data) {
-            let html = '<table><tr><th>Clave</th><th>Valor</th></tr>';
+            let html = '<table><th>Clave</th><th>Valor</th></tr>';
             result.data.forEach(row => {
                 if (row && row.length >= 2) {
-                    html += `<tr><td>${row[0]}</td><td>${row[1]}</td></tr>`;
+                    html += `<tr><td>${escapeHtml(row[0])}</td><td>${escapeHtml(row[1])}</td></tr>`;
                 }
             });
             html += '</table>';
-            document.getElementById('inicioData').innerHTML = html || '<p>No hay datos aún, pero tu hoja está creada.</p>';
+            document.getElementById('inicioData').innerHTML = html || '<p>No hay datos aún.</p>';
         } else {
-            document.getElementById('inicioData').innerHTML = '<p>Error al cargar datos.</p>';
+            document.getElementById('inicioData').innerHTML = '<p>Error al cargar datos o no hay información.</p>';
         }
     }
 
-    // Manejar registro/login
+    // Función auxiliar para evitar XSS
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    // Manejar registro o login
     async function submitAuth() {
         const email = emailInput.value.trim();
         const password = passwordInput.value;
         const action = isLogin ? 'login' : 'register';
+
+        if (!email || !password) {
+            authMessage.className = 'error';
+            authMessage.innerText = 'Por favor completa todos los campos.';
+            return;
+        }
 
         const result = await callAppScript(action, { email, password });
         if (result.success) {
@@ -214,7 +213,7 @@
                 userEmailSpan.innerText = email;
                 loadUserData();
             } else {
-                // Registro exitoso, cambiar a login
+                // Registro exitoso: cambiar a modo login automáticamente
                 isLogin = true;
                 formTitle.innerText = 'Iniciar Sesión';
                 authBtn.innerText = 'Iniciar Sesión';
@@ -229,7 +228,7 @@
         }
     }
 
-    authBtn.addEventListener('click', submitAuth);
+    // Alternar entre formulario de login y registro
     toggleLink.addEventListener('click', () => {
         isLogin = !isLogin;
         if (isLogin) {
@@ -244,6 +243,8 @@
         authMessage.innerText = '';
     });
 
+    authBtn.addEventListener('click', submitAuth);
+
     logoutBtn.addEventListener('click', () => {
         currentUser = null;
         authPanel.style.display = 'block';
@@ -251,7 +252,6 @@
         emailInput.value = '';
         passwordInput.value = '';
         authMessage.innerText = '';
-        // Limpiar datos mostrados
         document.getElementById('inicioData').innerHTML = '';
     });
 </script>
