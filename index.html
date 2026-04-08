@@ -1,110 +1,151 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Learnix - Registro</title>
+<meta charset="UTF-8">
+<title>Learnix</title>
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #0f172a;
-      color: white;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
+<style>
+body {
+  font-family: Arial;
+  background: #0f172a;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
 
-    .container {
-      background: #1e293b;
-      padding: 30px;
-      border-radius: 12px;
-      width: 300px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.5);
-    }
+.container {
+  background: #1e293b;
+  padding: 30px;
+  border-radius: 12px;
+  width: 320px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+}
 
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
-    }
+h2 {
+  text-align: center;
+}
 
-    input {
-      width: 100%;
-      padding: 10px;
-      margin: 8px 0;
-      border: none;
-      border-radius: 6px;
-    }
+input {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  border-radius: 6px;
+  border: none;
+}
 
-    button {
-      width: 100%;
-      padding: 10px;
-      background: #22c55e;
-      border: none;
-      border-radius: 6px;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-    }
+button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  border: none;
+  border-radius: 6px;
+  background: #22c55e;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
 
-    button:hover {
-      background: #16a34a;
-    }
+button:hover {
+  background: #16a34a;
+}
 
-    .msg {
-      margin-top: 10px;
-      text-align: center;
-      font-size: 14px;
-    }
-  </style>
+.switch {
+  text-align: center;
+  margin-top: 10px;
+  cursor: pointer;
+  color: #38bdf8;
+}
+
+.msg {
+  margin-top: 10px;
+  text-align: center;
+}
+</style>
 </head>
 
 <body>
 
 <div class="container">
-  <h2>Registro Learnix</h2>
+
+  <h2 id="title">Registro</h2>
 
   <input type="email" id="email" placeholder="Correo">
   <input type="password" id="password" placeholder="Contraseña">
 
-  <button onclick="register()">Registrarse</button>
+  <button onclick="handleAction()" id="btn">Registrarse</button>
+
+  <div class="switch" onclick="toggleMode()">
+    Cambiar a Login
+  </div>
 
   <div class="msg" id="msg"></div>
+
 </div>
 
 <script>
-  const API_URL = "https://script.google.com/macros/s/AKfycbyC7YnPQGDIL5WZpob4VpPviRlPeddNs5aDaMAz8H38CfEeJFc3TyGZnFijDrsnDo-4Jg/exec"; // ← CAMBIA ESTO
+const API_URL = "https://noisy-tooth-c85c.jreyessanjur.workers.dev/";
 
-  async function register() {
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-    const msg = document.getElementById("msg");
+let isLogin = false;
 
-    msg.innerText = "Procesando...";
+function toggleMode() {
+  isLogin = !isLogin;
 
-    try {
-      const response = await fetch(
-        `${API_URL}?action=register&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`
-      );
+  document.getElementById("title").innerText = isLogin ? "Login" : "Registro";
+  document.getElementById("btn").innerText = isLogin ? "Ingresar" : "Registrarse";
+  document.querySelector(".switch").innerText = isLogin 
+    ? "Cambiar a Registro" 
+    : "Cambiar a Login";
+}
 
-      const data = await response.json();
+async function handleAction() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+  const msg = document.getElementById("msg");
 
-      if (data.success) {
-        msg.style.color = "lightgreen";
-        msg.innerText = "Registro exitoso 🎉";
-      } else {
-        msg.style.color = "red";
-        msg.innerText = data.message;
-      }
-
-    } catch (error) {
-      msg.style.color = "red";
-      msg.innerText = "Error de conexión";
-      console.error(error);
-    }
+  if (!email || !password) {
+    msg.style.color = "red";
+    msg.innerText = "Completa todos los campos";
+    return;
   }
+
+  msg.innerText = "Procesando...";
+
+  const action = isLogin ? "login" : "register";
+
+  try {
+    const res = await fetch(
+      `${API_URL}?action=${action}&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`
+    );
+
+    const data = await res.json();
+
+    if (data.success) {
+
+      msg.style.color = "lightgreen";
+      msg.innerText = isLogin ? "Login exitoso 🎉" : "Registro exitoso 🎉";
+
+      // 🔐 guardar sesión
+      localStorage.setItem("user", JSON.stringify(data));
+
+      // 🚀 redirección (puedes crear luego dashboard.html)
+      setTimeout(() => {
+        window.location.href = "dashboard.html";
+      }, 1000);
+
+    } else {
+      msg.style.color = "red";
+      msg.innerText = data.message;
+    }
+
+  } catch (error) {
+    msg.style.color = "red";
+    msg.innerText = "Error de conexión";
+    console.error(error);
+  }
+}
 </script>
 
 </body>
 </html>
- 
