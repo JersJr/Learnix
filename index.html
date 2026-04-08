@@ -1,259 +1,109 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Asistencia Estudiantes - Con Google Sheets</title>
-    <style>
-        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background: #f0f2f5; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .container { max-width: 1200px; width: 100%; background: white; border-radius: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); overflow: hidden; }
-        .header { background: #1e3c72; color: white; padding: 20px; text-align: center; font-size: 1.5rem; font-weight: bold; }
-        .content { padding: 30px; }
-        .form-box { max-width: 400px; margin: 0 auto; }
-        .form-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; font-weight: 600; }
-        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; }
-        button { background: #1e3c72; color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-size: 1rem; width: 100%; margin-top: 10px; transition: 0.2s; }
-        button:hover { background: #0f2b4f; }
-        .toggle-link { text-align: center; margin-top: 15px; color: #1e3c72; cursor: pointer; text-decoration: underline; }
-        .error { color: #d9534f; font-size: 0.9rem; margin-top: 5px; text-align: center; }
-        .success { color: #5cb85c; text-align: center; }
-        .dashboard { display: none; }
-        .nav { display: flex; flex-wrap: wrap; gap: 10px; background: #f8f9fa; padding: 15px; border-radius: 12px; margin-bottom: 30px; }
-        .nav a { background: white; padding: 10px 18px; border-radius: 40px; text-decoration: none; color: #1e3c72; font-weight: 500; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: 0.2s; cursor: pointer; }
-        .nav a:hover { background: #e9ecef; transform: translateY(-2px); }
-        .section { display: none; background: #fefefe; border-radius: 16px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
-        .section.active { display: block; }
-        h2 { margin-top: 0; color: #1e3c72; border-left: 5px solid #1e3c72; padding-left: 15px; }
-        .user-info { text-align: right; margin-bottom: 20px; font-size: 0.9rem; color: #555; }
-        .logout { background: #dc3545; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; margin-left: 15px; }
-        .logout:hover { background: #c82333; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background: #f2f2f2; }
-    </style>
-</head>
-<body>
-<div class="container">
-    <div class="header">📊 Asistencia Estudiantes</div>
-    <div class="content">
-        <!-- Panel de autenticación -->
-        <div id="authPanel">
-            <div class="form-box">
-                <h2 id="formTitle">Iniciar Sesión</h2>
-                <div id="authMessage" class="error"></div>
-                <div class="form-group">
-                    <label>Correo electrónico</label>
-                    <input type="email" id="email" placeholder="usuario@ejemplo.com">
-                </div>
-                <div class="form-group">
-                    <label>Contraseña</label>
-                    <input type="password" id="password" placeholder="Mínimo 8, una mayúscula y un número">
-                </div>
-                <button id="authBtn">Iniciar Sesión</button>
-                <div class="toggle-link" id="toggleAuth">¿No tienes cuenta? Regístrate</div>
-            </div>
-        </div>
+  <meta charset="UTF-8">
+  <title>Learnix - Registro</title>
 
-        <!-- Dashboard principal (tras login) -->
-        <div id="dashboard" class="dashboard">
-            <div class="user-info">
-                <span id="userEmail"></span>
-                <button class="logout" id="logoutBtn">Cerrar sesión</button>
-            </div>
-            <div class="nav">
-                <a data-section="A">🏠 Inicio</a>
-                <a data-section="B">🏫 Colegios</a>
-                <a data-section="C">⏰ Horario</a>
-                <a data-section="D">📋 Listas</a>
-                <a data-section="E">📊 Estadísticas</a>
-                <a data-section="F">📄 Informe</a>
-            </div>
-            <div id="sectionInicio" class="section active">
-                <h2>Inicio</h2>
-                <p>Bienvenido a tu espacio personal. Aquí se muestran datos de tu hoja individual en Google Sheets.</p>
-                <div id="inicioData"></div>
-            </div>
-            <div id="sectionColegios" class="section">
-                <h2>Colegios</h2>
-                <p>Gestión de colegios (puedes ampliar).</p>
-                <button onclick="alert('Función en desarrollo: guardar colegios en tu hoja')">Agregar Colegio</button>
-            </div>
-            <div id="sectionHorario" class="section">
-                <h2>Horario</h2>
-                <p>Gestión de horarios.</p>
-                <button onclick="alert('Función en desarrollo')">Editar Horario</button>
-            </div>
-            <div id="sectionListas" class="section">
-                <h2>Listas</h2>
-                <p>Listas personalizadas.</p>
-                <button onclick="alert('Función en desarrollo')">Crear lista</button>
-            </div>
-            <div id="sectionEstadisticas" class="section">
-                <h2>Estadísticas</h2>
-                <p>Visualización de datos.</p>
-                <button onclick="alert('Gráficos próximamente')">Ver estadísticas</button>
-            </div>
-            <div id="sectionInforme" class="section">
-                <h2>Informe</h2>
-                <p>Generar informes desde tu hoja.</p>
-                <button onclick="alert('Informe generado (demo)')">Generar Informe</button>
-            </div>
-        </div>
-    </div>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      background: #1e293b;
+      padding: 30px;
+      border-radius: 12px;
+      width: 300px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: none;
+      border-radius: 6px;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      background: #22c55e;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #16a34a;
+    }
+
+    .msg {
+      margin-top: 10px;
+      text-align: center;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+  <h2>Registro Learnix</h2>
+
+  <input type="email" id="email" placeholder="Correo">
+  <input type="password" id="password" placeholder="Contraseña">
+
+  <button onclick="register()">Registrarse</button>
+
+  <div class="msg" id="msg"></div>
 </div>
 
 <script>
-    // === CONFIGURACIÓN ===
-    // Reemplaza con la URL de tu aplicación web de Google Apps Script
-    const APP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzNuvY7P6Z6tJWsQmvo8McvdlC3rLkDjTzANZDMrF3ln476m0QHMGXo5Kudg5ns3BTZAQ/exec';
+  const API_URL = "https://script.google.com/macros/s/AKfycbyC7YnPQGDIL5WZpob4VpPviRlPeddNs5aDaMAz8H38CfEeJFc3TyGZnFijDrsnDo-4Jg/exec"; // ← CAMBIA ESTO
 
-    // Estado de la interfaz
-    let isLogin = true;
-    let currentUser = null;
+  async function register() {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    const msg = document.getElementById("msg");
 
-    // Elementos del DOM
-    const authPanel = document.getElementById('authPanel');
-    const dashboard = document.getElementById('dashboard');
-    const formTitle = document.getElementById('formTitle');
-    const authBtn = document.getElementById('authBtn');
-    const toggleLink = document.getElementById('toggleAuth');
-    const authMessage = document.getElementById('authMessage');
-    const emailInput = document.getElementById('email');
-    const passwordInput = document.getElementById('password');
-    const userEmailSpan = document.getElementById('userEmail');
-    const logoutBtn = document.getElementById('logoutBtn');
+    msg.innerText = "Procesando...";
 
-    // Navegación entre secciones usando atributos data-section (A-F)
-    document.querySelectorAll('.nav a').forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            const sectionCode = link.getAttribute('data-section');
-            const sections = ['Inicio', 'Colegios', 'Horario', 'Listas', 'Estadisticas', 'Informe'];
-            const index = 'ABCDEF'.indexOf(sectionCode);
-            if (index !== -1) {
-                document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
-                const targetId = `section${sections[index]}`;
-                document.getElementById(targetId).classList.add('active');
-            }
-        });
-    });
+    try {
+      const response = await fetch(
+        `${API_URL}?action=register&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`
+      );
 
-    // Función para llamar al Apps Script usando x-www-form-urlencoded (sin preflight CORS)
-    async function callAppScript(action, extraData = {}) {
-        const formData = new URLSearchParams();
-        formData.append('action', action);
-        if (extraData.email) formData.append('email', extraData.email);
-        if (extraData.password) formData.append('password', extraData.password);
-        
-        try {
-            const response = await fetch(APP_SCRIPT_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: formData
-            });
-            const result = await response.json();
-            return result;
-        } catch (error) {
-            console.error('Error en fetch:', error);
-            return { success: false, message: 'Error de conexión con el servidor.' };
-        }
+      const data = await response.json();
+
+      if (data.success) {
+        msg.style.color = "lightgreen";
+        msg.innerText = "Registro exitoso 🎉";
+      } else {
+        msg.style.color = "red";
+        msg.innerText = data.message;
+      }
+
+    } catch (error) {
+      msg.style.color = "red";
+      msg.innerText = "Error de conexión";
+      console.error(error);
     }
-
-    // Cargar datos de la hoja individual del usuario (sección Inicio)
-    async function loadUserData() {
-        if (!currentUser) return;
-        const result = await callAppScript('getUserData', { email: currentUser });
-        if (result.success && result.data) {
-            let html = '<table><th>Clave</th><th>Valor</th></tr>';
-            result.data.forEach(row => {
-                if (row && row.length >= 2) {
-                    html += `<tr><td>${escapeHtml(row[0])}</td><td>${escapeHtml(row[1])}</td></tr>`;
-                }
-            });
-            html += '</table>';
-            document.getElementById('inicioData').innerHTML = html || '<p>No hay datos aún.</p>';
-        } else {
-            document.getElementById('inicioData').innerHTML = '<p>Error al cargar datos o no hay información.</p>';
-        }
-    }
-
-    // Función auxiliar para evitar XSS
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        });
-    }
-
-    // Manejar registro o login
-    async function submitAuth() {
-        const email = emailInput.value.trim();
-        const password = passwordInput.value;
-        const action = isLogin ? 'login' : 'register';
-
-        if (!email || !password) {
-            authMessage.className = 'error';
-            authMessage.innerText = 'Por favor completa todos los campos.';
-            return;
-        }
-
-        const result = await callAppScript(action, { email, password });
-        if (result.success) {
-            authMessage.className = 'success';
-            authMessage.innerText = result.message;
-            if (action === 'login') {
-                currentUser = email;
-                authPanel.style.display = 'none';
-                dashboard.style.display = 'block';
-                userEmailSpan.innerText = email;
-                loadUserData();
-            } else {
-                // Registro exitoso: cambiar a modo login automáticamente
-                isLogin = true;
-                formTitle.innerText = 'Iniciar Sesión';
-                authBtn.innerText = 'Iniciar Sesión';
-                toggleLink.innerText = '¿No tienes cuenta? Regístrate';
-                authMessage.innerText = 'Registro exitoso. Ahora inicia sesión.';
-                emailInput.value = '';
-                passwordInput.value = '';
-            }
-        } else {
-            authMessage.className = 'error';
-            authMessage.innerText = result.message;
-        }
-    }
-
-    // Alternar entre formulario de login y registro
-    toggleLink.addEventListener('click', () => {
-        isLogin = !isLogin;
-        if (isLogin) {
-            formTitle.innerText = 'Iniciar Sesión';
-            authBtn.innerText = 'Iniciar Sesión';
-            toggleLink.innerText = '¿No tienes cuenta? Regístrate';
-        } else {
-            formTitle.innerText = 'Registro de Usuario';
-            authBtn.innerText = 'Registrarse';
-            toggleLink.innerText = '¿Ya tienes cuenta? Inicia sesión';
-        }
-        authMessage.innerText = '';
-    });
-
-    authBtn.addEventListener('click', submitAuth);
-
-    logoutBtn.addEventListener('click', () => {
-        currentUser = null;
-        authPanel.style.display = 'block';
-        dashboard.style.display = 'none';
-        emailInput.value = '';
-        passwordInput.value = '';
-        authMessage.innerText = '';
-        document.getElementById('inicioData').innerHTML = '';
-    });
+  }
 </script>
+
 </body>
 </html>
